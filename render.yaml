@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: project
+    name: puppeteer-app
     env: node
     region: oregon
     buildCommand: npm install
@@ -8,10 +8,7 @@ services:
     branch: main
     plan: free
     autoDeploy: true
-    envVars:
-      - key: NODE_ENV
-        value: production
     docker:
-      baseImage: render/node:18
+      baseImage: render/node:18  # Đây là image Node.js từ Render
       args:
-        - --no-sandbox
+        - --no-sandbox  # Cần thiết khi sử dụng Puppeteer hoặc các trình duyệt headless
