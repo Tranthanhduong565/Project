@@ -8,7 +8,4 @@ services:
     branch: main
     plan: free
     autoDeploy: true
-    docker:
-      baseImage: render/node:18  # Đây là image Node.js từ Render
-      args:
-        - --no-sandbox  # Cần thiết khi sử dụng Puppeteer hoặc các trình duyệt headless
+    
