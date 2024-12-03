@@ -3,35 +3,37 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-// Hàm cài đặt Chromium nếu không có
+// Function to install Chromium if missing
 async function installChromeIfNeeded() {
     try {
-        // Kiểm tra xem Puppeteer đã cài đặt Chrome chưa
+        // Check if Puppeteer has installed Chromium
         const result = await puppeteer.executablePath();
         if (!result) {
-            throw new Error('Chromium không được cài đặt.');
+            throw new Error('Chromium not installed.');
         }
     } catch (error) {
-        console.log('Chrome không tìm thấy. Đang cài đặt Chromium...');
+        console.log('Chromium not found. Installing Chromium...');
         try {
-            // Cài đặt Chromium
+            // Install Chromium using Puppeteer
             execSync('npx puppeteer install', { stdio: 'inherit' });
-            console.log('Chromium đã được cài đặt thành công!');
+            console.log('Chromium installed successfully!');
         } catch (installError) {
-            console.error('Không thể cài đặt Chromium:', installError.message);
-            throw new Error('Cài đặt Chromium thất bại!');
+            console.error('Could not install Chromium:', installError.message);
+            throw new Error('Chromium installation failed!');
         }
     }
 }
 
-// Hàm đăng nhập và xuất cookie
+// Set the cache path manually (important for Render or similar environments)
+process.env.PUPPETEER_CACHE_DIR = '/opt/render/.cache/puppeteer'; // Set the correct cache path for Render
+
 async function loginAndExportCookies(email, password) {
-    await installChromeIfNeeded();  // Kiểm tra và cài đặt Chromium nếu cần
+    await installChromeIfNeeded();  // Check and install Chromium if needed
 
     const browser = await puppeteer.launch({
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],  // Các tham số cho môi trường không có giao diện người dùng
-        executablePath: puppeteer.executablePath()  // Sử dụng đường dẫn đến Chromium đã cài đặt
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],  // Args for headless environment
+        executablePath: puppeteer.executablePath()  // Use installed Chromium
     });
 
     const page = await browser.newPage();
@@ -50,7 +52,7 @@ async function loginAndExportCookies(email, password) {
         const isLoggedIn = await page.evaluate(() => !document.querySelector('#error_box'));
 
         if (!isLoggedIn) {
-            throw new Error('Đăng nhập thất bại! Kiểm tra tài khoản hoặc mật khẩu.');
+            throw new Error('Login failed! Check your email or password.');
         }
 
         const cookies = await page.cookies();
@@ -58,10 +60,10 @@ async function loginAndExportCookies(email, password) {
         
         const userId = await page.evaluate(() => {
             const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
-            return userInfo.id || 'Không tìm thấy ID';
+            return userInfo.id || 'User ID not found';
         });
 
-        console.log(`ID người dùng: ${userId}`);
+        console.log(`User ID: ${userId}`);
 
         return fbCookies.map(cookie => ({
             key: cookie.name,
@@ -74,22 +76,22 @@ async function loginAndExportCookies(email, password) {
             lastAccessed: new Date().toISOString(),
         }));
     } catch (err) {
-        throw new Error(`Lỗi trong quá trình đăng nhập: ${err.message}`);
+        throw new Error(`Error during login: ${err.message}`);
     } finally {
         await browser.close();
     }
 }
 
-// Sử dụng email và mật khẩu của bạn
-const email = 'duongduongg465@gmail.com';
-const password = 'ttđ952008';
+// Email and password for login
+const email = 'duongduongg465@gmail.com';  // Replace with your email
+const password = 'ttđ952008';        // Replace with your password
 
 loginAndExportCookies(email, password)
     .then(fbState => {
         const filePath = path.join(__dirname, 'fbstate.json');
         fs.writeFileSync(filePath, JSON.stringify(fbState, null, 4));
-        console.log('Đăng nhập thành công và cookie đã được lưu!');
+        console.log('Login successful and cookies saved!');
     })
     .catch(err => {
-        console.error(`Đăng nhập thất bại: ${err.message}`);
+        console.error(`Login failed: ${err.message}`);
     });
