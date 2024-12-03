@@ -2,14 +2,19 @@ const http = require("http");
 const { spawn } = require("child_process");
 const log = require('./src/log'); 
 const server = http.createServer((req, res) => {
-  if (req.url === "/" && req.method === "GET") {
-      res.end(JSON.stringify({ message: "Hii 🖖" }));
-  } else if (req.url === "/api" && req.method === "GET") {
-      res.end(JSON.stringify({ message: "API response here" }));
-  } else {
-      res.statusCode = 404;
-      res.end(JSON.stringify({ error: "404 Not Found" }));
-  }
+  res.writeHead(200, { 'Content-Type': 'text/html' });
+  res.end(`
+    <html>
+      <head>
+        <title>Bot Server</title>
+      </head>
+      <body>
+        <h1>Hii 🖖</h1>
+        <p>Welcome to the bot server. Đây là một server đơn giản trả về HTML cho tất cả các route.</p>
+        <p>Đường dẫn /api hay bất kỳ đường dẫn nào khác cũng trả về trang này.</p>
+      </body>
+    </html>
+  `);
 });
 server.listen(process.env.PORT || 3000, () => {
   log("Đang mở server bot", "[ START ]");
