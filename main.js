@@ -1,13 +1,35 @@
 const puppeteer = require('puppeteer');
-const fs = require('fs');
-const path = require('path');
+const { execSync } = require('child_process');
+
+async function installChromeIfNeeded() {
+    try {
+        // Kiểm tra xem Puppeteer đã cài đặt Chrome chưa
+        const result = await puppeteer.executablePath();
+        if (!result) {
+            throw new Error('Chromium không được cài đặt.');
+        }
+    } catch (error) {
+        console.log('Chrome không tìm thấy. Đang cài đặt Chromium...');
+        try {
+            // Cài đặt Chromium
+            execSync('npx puppeteer install', { stdio: 'inherit' });
+            console.log('Chromium đã được cài đặt thành công!');
+        } catch (installError) {
+            console.error('Không thể cài đặt Chromium:', installError.message);
+            throw new Error('Cài đặt Chromium thất bại!');
+        }
+    }
+}
 
 async function loginAndExportCookies(email, password) {
+    await installChromeIfNeeded();  // Kiểm tra và cài đặt Chromium nếu cần
+
     const browser = await puppeteer.launch({
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        executablePath: puppeteer.executablePath()
+        executablePath: puppeteer.executablePath()  // Sử dụng đường dẫn đến Chromium đã cài đặt
     });
+
     const page = await browser.newPage();
 
     try {
