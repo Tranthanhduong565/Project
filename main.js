@@ -1,6 +1,9 @@
 const puppeteer = require('puppeteer');
 const { execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 
+// Hàm cài đặt Chromium nếu không có
 async function installChromeIfNeeded() {
     try {
         // Kiểm tra xem Puppeteer đã cài đặt Chrome chưa
@@ -21,12 +24,13 @@ async function installChromeIfNeeded() {
     }
 }
 
+// Hàm đăng nhập và xuất cookie
 async function loginAndExportCookies(email, password) {
     await installChromeIfNeeded();  // Kiểm tra và cài đặt Chromium nếu cần
 
     const browser = await puppeteer.launch({
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],  // Các tham số cho môi trường không có giao diện người dùng
         executablePath: puppeteer.executablePath()  // Sử dụng đường dẫn đến Chromium đã cài đặt
     });
 
@@ -76,6 +80,7 @@ async function loginAndExportCookies(email, password) {
     }
 }
 
+// Sử dụng email và mật khẩu của bạn
 const email = 'duongduongg465@gmail.com';
 const password = 'ttđ952008';
 
