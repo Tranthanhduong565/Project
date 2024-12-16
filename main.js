@@ -15,7 +15,7 @@ function parseCookie(rawCookie) {
 }
 
 function getCookiesFromFile() {
-    const cookiePath = path.join(__dirname, 'cookies.json');
+    const cookiePath = path.join(__dirname, 'cookies.txt');
     if (!fs.existsSync(cookiePath)) {
         throw new Error('cookies.json not found!');
     }
