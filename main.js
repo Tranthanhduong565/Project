@@ -1,83 +1,42 @@
 const puppeteer = require('puppeteer');
-const fs = require('fs');
-const path = require('path');
 
-function parseCookie(rawCookie) {
-    return rawCookie.split('; ').map(cookie => {
-        const [name, value] = cookie.split('=');
-        return {
-            name: name.trim(),
-            value: value.trim(),
-            domain: '.facebook.com',
-            path: '/'
-        };
-    });
-}
-
-function getCookiesFromFile() {
-    const cookiePath = path.join(__dirname, 'cookies.txt');
-    if (!fs.existsSync(cookiePath)) {
-        throw new Error('cookies.json not found!');
-    }
-
-    const rawData = fs.readFileSync(cookiePath, 'utf-8').trim();
-    if (rawData.startsWith('{') || rawData.startsWith('[')) {
-        return JSON.parse(rawData);
-    } else {
-        return parseCookie(rawData);
-    }
-}
-
-async function loginWithCookie() {
+(async () => {
     const browser = await puppeteer.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        headless: true, // Chạy ở chế độ không hiển thị giao diện
+        args: ['--no-sandbox', '--disable-setuid-sandbox'] // Thêm các tham số nếu cần
     });
-
     const page = await browser.newPage();
 
-    try {
-        const cookies = getCookiesFromFile();
-        await page.setCookie(...cookies);
+    // Định nghĩa cookie từ dữ liệu đã cho
+    const cookies = [
+        { name: 'wd', value: '414x896', domain: '.facebook.com' },
+        { name: 'datr', value: 'JPFfZ1R_TMUeUNo0r7HZOPNh', domain: '.facebook.com' },
+        { name: 'dbln', value: '%7B%22100029977491749%22%3A%22g203elvL%22%7D', domain: '.facebook.com' },
+        { name: 'ps_l', value: '1', domain: '.facebook.com' },
+        { name: 'wl_cbv', value: 'v2%3Bclient_version%3A2697%3Btimestamp%3A1734358439', domain: '.facebook.com' },
+        { name: 'xs', value: '33%3AjLwTin5_o6LVzw%3A2%3A1734340897%3A-1%3A6149', domain: '.facebook.com' },
+        { name: 'fbl_st', value: '100626206%3BT%3A28905974', domain: '.facebook.com' },
+        { name: 'sb', value: '5fBfZ1b816KNZWNmZJpbB2lU', domain: '.facebook.com' },
+        { name: 'vpd', value: 'v1%3B730x414x3', domain: '.facebook.com' },
+        { name: 'fr', value: '0LZ7ywsH1oTf2feNl.AWVktH7j69e9KbkkDA9OVBkTZJk.BnX_Dl..AAA.0.0.BnX_Eg.AWVly0oiSzI', domain: '.facebook.com' },
+        { name: 'locale', value: 'vi_VN', domain: '.facebook.com' },
+        { name: 'm_pixel_ratio', value: '3', domain: '.facebook.com' },
+        { name: 'ps_n', value: '1', domain: '.facebook.com' },
+        { name: 'c_user', value: '100029977491749', domain: '.facebook.com' },
+    ];
 
-        await page.goto('https://www.facebook.com/', { waitUntil: 'networkidle2' });
+    // Điều hướng đến trang Facebook và gắn cookie
+    await page.setCookie(...cookies);
+    await page.goto('https://www.facebook.com');
 
-        const isLoggedIn = await page.evaluate(() => {
-            return !document.querySelector('a[href="/login/"]');
-        });
+    // Chờ trang tải xong
+    await page.waitForTimeout(5000);
 
-        if (!isLoggedIn) {
-            throw new Error('Login failed! Cookie may be invalid.');
-        }
+    // Chụp màn hình để kiểm tra
+    await page.screenshot({ path: 'screenshot.png' });
 
-        console.log('Login successful using cookies.');
+    console.log('Đăng nhập thành công, ảnh chụp màn hình đã được lưu!');
 
-        // Lấy ID và tên Facebook
-        const userInfo = await page.evaluate(() => {
-            const id = document.cookie.match(/c_user=(\d+)/)?.[1];
-            const name = document.querySelector('span[data-click="profile_icon"]')?.textContent || null;
-            return { id, name };
-        });
-
-        if (!userInfo.id || !userInfo.name) {
-            throw new Error('Failed to retrieve Facebook user info.');
-        }
-
-        console.log(`Facebook ID: ${userInfo.id}`);
-        console.log(`Facebook Name: ${userInfo.name}`);
-
-        const updatedCookies = await page.cookies();
-        fs.writeFileSync(
-            path.join(__dirname, 'updated_cookies.json'),
-            JSON.stringify(updatedCookies, null, 4)
-        );
-
-        console.log('Cookies have been updated and saved.');
-    } catch (err) {
-        console.error(`Error during login: ${err.message}`);
-    } finally {
-        await browser.close();
-    }
-}
-
-loginWithCookie();
+    // Đóng trình duyệt
+    await browser.close();
+})();
