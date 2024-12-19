@@ -1,0 +1,73 @@
+/* Reset some default styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Set background color for the body */
+body {
+  font-family: 'Open Sans', sans-serif;
+  background-color: #ebebeb; /* Light gray background */
+  padding: 20px;
+}
+
+/* Container style */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Card style */
+.card {
+  background-color: black;
+  border-radius: 10px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+/* Card header style */
+.card-header {
+  background-color: #ffffff; /* Blue background */
+  color: black;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Table style */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table td,
+.table th {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+}
+
+.table tr:hover {
+  background-color: #f1f1f1; /* Hover effect for rows */
+}
+
+/* Shadow effect on the cards */
+.card {
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Deeper shadow on hover */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+
+  .card-header {
+    font-size: 16px;
+  }
+}
