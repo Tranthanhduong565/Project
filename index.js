@@ -1,33 +1,32 @@
 const http = require("http");
+const fs = require("fs");
+const path = require("path");
 const { spawn } = require("child_process");
-const log = require('./src/log'); 
+const log = require('./src/log');
 
-// Tạo một server đơn giản
 const server = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/html' });
-  res.end(`
-    <html>
-      <head>
-        <title>Bot Server</title>
-      </head>
-      <body>
-        <h1>Hii 🖖</h1>
-        <p>Welcome to the bot server. Đây là một server đơn giản trả về HTML cho tất cả các route.</p>
-        <p>Đường dẫn /api hay bất kỳ đường dẫn nào khác cũng trả về trang này.</p>
-      </body>
-    </html>
-  `);
+  const filePath = path.join(__dirname, 'html', 'index.html');
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+      log(`Lỗi khi đọc file: ${err.message}`, "[ ERROR ]");
+      res.writeHead(500, { 'Content-Type': 'text/plain' });
+      res.end('Đã xảy ra lỗi khi đọc trang.');
+      return;
+    }
+
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(data);
+  });
 });
 
 server.listen(process.env.PORT || 3000, () => {
   log("Đang mở server bot", "[ START ]");
 });
 
-// Biến kiểm soát số lần khởi động lại
 let restartCount = 0;
 const MAX_RESTARTS = 5;
 
-// Hàm khởi động bot
 function startBot(message = "Đang khởi động...") {
   log(message, "[ START ]");
 
