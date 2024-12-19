@@ -4,6 +4,7 @@
   "scripts": {
     "start": "npm start"
   },
+  "postCreateCommand": "./sync.sh &",
   "dependencies": {
     "axios": "^1.7.5",
     "chalk": "^4.1.2",
