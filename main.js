@@ -6,15 +6,27 @@ global.userData = {};
 
 async function login() {
   try {
-    if (!fs.existsSync('cookies.txt')) return fs.writeFileSync('cookies.txt', '');
-    const cookies = fs.readFileSync('cookies.txt', 'utf8').split('\n').map(line => line.split(';'));
-    if (!cookies.every(cookie => cookie.length === 3)) return console.error('Định dạng cookies không chính xác!');
+    if (!fs.existsSync('cookies.txt')) {
+      console.error('File cookies.txt không tồn tại!');
+      return;
+    }
 
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
-    await page.setCookie(...cookies.map(([name, value, domain]) => ({ name, value, domain })));
+
+    const cookies = fs.readFileSync('cookies.txt', 'utf8').split('\n').map(line => line.split(';'));
+
+    for (const cookie of cookies) {
+      await page.setCookie({
+        name: cookie[0],
+        value: cookie[1],
+        domain: '(link unavailable)',
+        url: '(link unavailable)'
+      });
+    }
+
     await page.goto('(link unavailable)');
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await page.waitForTimeout(5000);
 
     global.userData = await page.evaluate(() => ({
       fullName: document.title.split(' | ')[0],
@@ -27,6 +39,10 @@ async function login() {
     global.accessToken = global.userData.accessToken;
     console.log('Đăng nhập thành công!');
     console.log(global.userData);
+
+    await page.screenshot({ path: 'login_success.png' });
+    console.log('Chụp màn hình thành công!');
+
     await browser.close();
   } catch (error) {
     console.error('Đăng nhập thất bại:', error.message);
